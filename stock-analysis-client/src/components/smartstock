@@ -1,0 +1,39 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Load Excel File (Modify the filename)
+file_path = "stock_data.xlsx"  # Change to your file
+df = pd.read_excel(file_path, sheet_name=0)
+
+# Ensure proper column names (Modify based on your dataset structure)
+df.columns = ["Date", "Open", "High", "Low", "Close", "Volume"]
+
+# Convert 'Date' column to datetime format
+df["Date"] = pd.to_datetime(df["Date"])
+
+# Sort data by date (in case it's not sorted)
+df = df.sort_values("Date")
+
+# Calculate Moving Averages
+df["SMA_50"] = df["Close"].rolling(window=50).mean()  # 50-day Simple Moving Average
+df["EMA_20"] = df["Close"].ewm(span=20, adjust=False).mean()  # 20-day Exponential Moving Average
+
+# Calculate Bollinger Bands
+df["Rolling_Mean"] = df["Close"].rolling(window=20).mean()
+df["Rolling_STD"] = df["Close"].rolling(window=20).std()
+df["Upper_Band"] = df["Rolling_Mean"] + (df["Rolling_STD"] * 2)
+df["Lower_Band"] = df["Rolling_Mean"] - (df["Rolling_STD"] * 2)
+
+# Plot Stock Price with Indicators
+plt.figure(figsize=(12, 6))
+plt.plot(df["Date"], df["Close"], label="Closing Price", color="blue")
+plt.plot(df["Date"], df["SMA_50"], label="50-day SMA", color="orange")
+plt.plot(df["Date"], df["EMA_20"], label="20-day EMA", color="red")
+plt.fill_between(df["Date"], df["Upper_Band"], df["Lower_Band"], color="gray", alpha=0.2, label="Bollinger Bands")
+
+plt.xlabel("Date")
+plt.ylabel("Stock Price")
+plt.title("Stock Market Analysis with Moving Averages & Bollinger Bands")
+plt.legend()
+plt.grid()
+plt.show()
